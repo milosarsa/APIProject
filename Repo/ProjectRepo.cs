@@ -1,0 +1,323 @@
+﻿using Newtonsoft.Json;
+using System;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Linq;
+using System.Net;
+using System.Text;
+using System.Threading.Tasks;
+
+
+
+namespace Repo
+{
+    //Responsible for data access
+    public class ProjectRepo : IProjectRepo
+    {
+        private const string tableName = "Project";
+        private CloudTable table;
+        private ILogger<ProjectRepo> logger;
+        private IMemoryCache memoryCache;
+        private int startId = 1000;
+
+        public ProjectRepo(CloudStorageAccount storageAccount, ILogger<ProjectRepo> _logger, IMemoryCache _memoryCache)
+        {
+            logger = _logger ?? throw new ArgumentNullException(nameof(logger));
+            memoryCache = _memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
+            try
+            {
+                CloudTableClient _tableClient = storageAccount.CreateCloudTableClient();
+                table = _tableClient.GetTableReference(tableName);
+                table.CreateIfNotExistsAsync();
+            }
+            catch (StorageException ex)
+            {
+                _logger.LogError("Storage Account init failed.\n" + 
+                    ex.Message);
+                throw new HttpRequestException("Storage account init failed.",ex,HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public async Task CreateAsync(ProjectEntity entity)
+        {
+            //ProjectEntity is always passed with id = 0, always check for the current highest id and increase by 1
+            //Project can have the same name, we are not checking if a project already exists
+            try
+            {
+                int currentId = await GetHighestId();
+                currentId++;
+                entity.PartitionKey = currentId.ToString();
+
+                memoryCache.Remove("CurrentProjectId");
+                if(await Exists(entity.RowKey))
+                {
+                    throw new HttpRequestException($"Project with that name already exists.", null, HttpStatusCode.Conflict);
+                }
+
+                TableOperation tableOperation = TableOperation.Insert(entity);
+                TableResult tableResult = await table.ExecuteAsync(tableOperation);
+                if (tableResult.HttpStatusCode == 204)
+                    return;
+                else
+                    throw new HttpRequestException($"Entity creation with id {currentId} failed.", null, (HttpStatusCode)tableResult.HttpStatusCode);
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Creating new entity failed.\n" +
+                    ex.Message);
+                throw new HttpRequestException($"Creating new entity failed.\n{ex.Message}", ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public async Task<List<ProjectEntity>> ReadAllAsync()
+        {
+            List<ProjectEntity> entities = new List<ProjectEntity>();
+            try
+            {
+                //Creating table query to query all project entities
+                TableQuerySegment<ProjectEntity> querySegment = null;
+                TableQuery<ProjectEntity> tableQuery = new TableQuery<ProjectEntity>();
+
+                while (querySegment == null || querySegment.ContinuationToken != null)
+                {
+                    querySegment = await table.ExecuteQuerySegmentedAsync<ProjectEntity>(tableQuery, querySegment != null ? querySegment.ContinuationToken : null);
+                    entities.AddRange(querySegment.Results);
+                }
+                return entities;
+
+            }
+            catch(Exception ex)
+            {
+                logger.LogError("Reading all entities failed.\n" +
+                    ex.Message);
+                throw new HttpRequestException($"Reading all entities failed with error.\n{ex.Message}", ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public async Task<ProjectEntity> ReadAsync(int id)
+        {
+            try
+            {
+                TableQuerySegment<ProjectEntity> querySegment = null;
+                TableQuery<ProjectEntity> tableQuery = new TableQuery<ProjectEntity>();
+                tableQuery.Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, id.ToString()));
+                querySegment = await table.ExecuteQuerySegmentedAsync<ProjectEntity>(tableQuery, null);
+                if (querySegment.Results.Any())
+                {
+                    ProjectEntity entity = querySegment.Results[0] != null ? querySegment.Results[0] : new ProjectEntity();
+                    return entity; ;
+                }
+                else
+                {
+                    throw new HttpRequestException("Entity not found.", null, HttpStatusCode.NotFound);
+                }
+            }
+            catch(Exception ex)
+            {
+                logger.LogError("Reading entity failed.\n" +
+                    ex.Message);
+                throw new HttpRequestException($"Reading entity failed with error.\n{ex.Message}", ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public async Task UpdateAsync(ProjectEntity entity)
+        {
+            entity.ETag = "*";
+            try
+            {
+                if(await Exists(entity))
+                {
+                    TableOperation tableOperation = TableOperation.Merge(entity);
+                    TableResult tableResult = await table.ExecuteAsync(tableOperation);
+                    if(tableResult.HttpStatusCode == 204)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        logger.LogError($"Update failed!\nTable operation returned {((HttpStatusCode)tableResult.HttpStatusCode).ToString()} status");
+                        throw new HttpRequestException("Update failed.", null, (HttpStatusCode)tableResult.HttpStatusCode);
+                    }
+                }
+                else
+                {
+                    throw new HttpRequestException("Entity not found.", null, HttpStatusCode.NotFound);
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Updating entity failed.\n" +
+                    ex.Message);
+                throw new HttpRequestException("Updating entity failed with error.\n{ex.Message}", ex, HttpStatusCode.InternalServerError);
+            }
+        }
+        public async Task DeleteAsync(Entity entity)
+        {
+            try
+            {
+                if(await Exists(entity))
+                {
+                    TableOperation tableOperation = TableOperation.Delete(entity);
+                    TableResult tableResult = await table.ExecuteAsync(tableOperation);
+                    if (tableResult.HttpStatusCode == 204)
+                    {
+                        return;
+                    }
+                    else
+                    {
+                        throw new HttpRequestException("Deleting entity failed.", null, (HttpStatusCode)tableResult.HttpStatusCode);
+                    }
+                }
+                else
+                {
+                    throw new HttpRequestException("Entity not found.", null, HttpStatusCode.NotFound);
+                }
+            }
+            catch (StorageException ex)
+            {
+                logger.LogError("Deleting entity failed.\n" +
+                    ex.Message);
+                throw new HttpRequestException("Deleting entity failed with error.\n{ex.Message}", ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+
+        //Checking to see if the entity exists in the table
+        public async Task<bool> Exists(Entity entity)
+        {
+            //Try to retrieve entity, returns false if status code is 404 
+            try
+            {
+                TableOperation tableOperation = TableOperation.Retrieve(entity.PartitionKey, entity.RowKey);
+                TableResult tableResult = await table.ExecuteAsync(tableOperation);
+                if(tableResult.HttpStatusCode == 404)
+                {
+                    return false;
+                }
+                else if(tableResult.HttpStatusCode == 200)
+                {
+                    return true;
+                }
+                else
+                {
+                    logger.LogError($"Retrieving entity from {tableName} table failed.\n" +
+                        $"Table operation returned {((HttpStatusCode)tableResult.HttpStatusCode).ToString()} status ");
+                    throw new HttpRequestException("Retrieving entity failed.", null, (HttpStatusCode)tableResult.HttpStatusCode);
+                }
+            }
+            catch(Exception ex)
+            {
+                logger.LogError("Retrieving entity failed with error: \n" +
+                    ex.Message +
+                    "\nReturning not found!");
+                throw new HttpRequestException("Retrieving entity failed with error.\n{ex.Message}", ex, HttpStatusCode.InternalServerError);
+            }
+        }
+        public async Task<bool> Exists(int id)
+        {
+            
+            try
+            {
+                List<Entity> entities = new List<Entity>();
+                TableQuerySegment<Entity> querySegment = null;
+                TableQuery<Entity> tableQuery = new TableQuery<Entity>();
+                tableQuery.Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, id.ToString()));
+
+
+                while (querySegment == null || querySegment.ContinuationToken != null)
+                {
+                    querySegment = await table.ExecuteQuerySegmentedAsync<Entity>(tableQuery, querySegment != null ? querySegment.ContinuationToken : null);
+                    entities.AddRange(querySegment.Results);
+                }
+
+                if (entities.Any())
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Retrieving entity failed with error: \n" +
+                    ex.Message +
+                    "\nReturning not found!");
+                throw new HttpRequestException("Retrieving entity failed with error.\n{ex.Message}", ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        public async Task<bool> Exists(string name)
+        {
+
+            try
+            {
+                List<Entity> entities = new List<Entity>();
+                TableQuerySegment<Entity> querySegment = null;
+                TableQuery<Entity> tableQuery = new TableQuery<Entity>();
+                tableQuery.Where(TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, name));
+
+
+                while (querySegment == null || querySegment.ContinuationToken != null)
+                {
+                    querySegment = await table.ExecuteQuerySegmentedAsync<Entity>(tableQuery, querySegment != null ? querySegment.ContinuationToken : null);
+                    entities.AddRange(querySegment.Results);
+                }
+
+                if (entities.Any())
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Retrieving entity failed with error: \n" +
+                    ex.Message +
+                    "\nReturning not found!");
+                throw new HttpRequestException("Retrieving entity failed with error.\n{ex.Message}", ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        private async Task<int> GetHighestId()
+        {
+            try
+            {
+                int currentId = startId;
+                if (!memoryCache.TryGetValue("CurrentProjectId", out currentId))
+                {
+                    List<Entity> entities = new List<Entity>();
+                    //Creating table query to query all project entities
+                    TableQuerySegment<Entity> querySegment = null;
+                    TableQuery<Entity> tableQuery = new TableQuery<Entity>();
+
+                    while (querySegment == null || querySegment.ContinuationToken != null)
+                    {
+                        querySegment = await table.ExecuteQuerySegmentedAsync<Entity>(tableQuery, querySegment != null ? querySegment.ContinuationToken : null);
+                        entities.AddRange(querySegment.Results);
+                    }
+                    int tempId = 0;
+                    foreach(Entity entity in entities)
+                    {
+                        int entityId = int.Parse(entity.PartitionKey);
+                        tempId = tempId < entityId ? entityId : tempId;
+                    }
+                    currentId = tempId < startId ? startId : tempId;
+                    memoryCache.Set("CurrentProjectId", currentId);
+                }
+                return currentId;
+
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Reading all entities failed.\n" +
+                    ex.Message);
+                throw new HttpRequestException($"Reading all entities failed with error.\n{ex.Message}", ex, HttpStatusCode.InternalServerError);
+            }
+        }
+    }
+}
