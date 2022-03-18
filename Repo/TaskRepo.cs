@@ -45,7 +45,7 @@ namespace Repo
                 currentId++;
                 entity.PartitionKey = currentId.ToString();
 
-                memoryCache.Remove("CurrentTaskId");
+                memoryCache.Set("CurrentTaskId",currentId);
                 TableOperation tableOperation = TableOperation.Insert(entity);
                 TableResult tableResult = await table.ExecuteAsync(tableOperation);
                 if (tableResult.HttpStatusCode == 204)

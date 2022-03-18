@@ -46,7 +46,7 @@ namespace Repo
                 currentId++;
                 entity.PartitionKey = currentId.ToString();
 
-                memoryCache.Remove("CurrentProjectId");
+                memoryCache.Set("CurrentProjectId", currentId);
                 //Checking if project with given name already exists
                 if(await Exists(entity.RowKey, "RowKey"))
                 {
