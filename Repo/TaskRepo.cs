@@ -200,7 +200,7 @@ namespace Repo
             }
         }
 
-        //Checking to see if the entity exists in the table
+        //Checking to see if the entity exists in the table using a provided entity partitionKey and rowKey
         public async Task<bool> Exists(Entity entity)
         {
             //Try to retrieve entity, returns false if status code is 404 
@@ -228,15 +228,57 @@ namespace Repo
                 logger.LogError("Retrieving entity failed with error: \n" +
                     ex.Message +
                     "\nReturning not found!");
-                throw new HttpRequestException($"Retrieving entity failed with error.\n{ex.Message}", ex, HttpStatusCode.InternalServerError);
+                throw new HttpRequestException("Retrieving entity failed with error.\n{ex.Message}", ex, HttpStatusCode.InternalServerError);
             }
         }
+
+        // Check to see if the entity exists in the table using a provided value and key
+        // Ex.
+        // Exists("MyProjectId")
+        // Exists("MyProjectName", "RowKey")
+        public async Task<bool> Exists(string value, string key = "PartitionKey")
+        {
+
+            try
+            {
+                List<Entity> entities = new List<Entity>();
+                TableQuerySegment<Entity> querySegment = null;
+                TableQuery<Entity> tableQuery = new TableQuery<Entity>();
+                tableQuery.Where(TableQuery.GenerateFilterCondition(key, QueryComparisons.Equal, value));
+
+
+                while (querySegment == null || querySegment.ContinuationToken != null)
+                {
+                    querySegment = await table.ExecuteQuerySegmentedAsync<Entity>(tableQuery, querySegment != null ? querySegment.ContinuationToken : null);
+                    entities.AddRange(querySegment.Results);
+                }
+
+                if (entities.Any())
+                {
+                    return true;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Retrieving entity failed with error: \n" +
+                    ex.Message +
+                    "\nReturning not found!");
+                throw new HttpRequestException("Retrieving entity failed with error.\n{ex.Message}", ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        //Query all the entities in the current table and return the highest id
+        //We know that the table will be queried in ascending order so no need to iterate through entities 
         private async Task<int> GetHighestId()
         {
             try
             {
                 int currentId = startId;
-                if (!memoryCache.TryGetValue("CurrentTaskId", out currentId))
+                if (!memoryCache.TryGetValue("CurrentProjectId", out currentId))
                 {
                     List<Entity> entities = new List<Entity>();
                     //Creating table query to query all project entities
@@ -248,14 +290,53 @@ namespace Repo
                         querySegment = await table.ExecuteQuerySegmentedAsync<Entity>(tableQuery, querySegment != null ? querySegment.ContinuationToken : null);
                         entities.AddRange(querySegment.Results);
                     }
+
+                    int entityId = int.Parse(entities.LastOrDefault()?.PartitionKey ?? "0");
+
+                    //Use startId if tempId is smaller than startId - 0 (no entries present)
+                    currentId = entityId < startId ? startId : entityId;
+                    memoryCache.Set("CurrentProjectId", currentId);
+                }
+                return currentId;
+            }
+            catch (Exception ex)
+            {
+                logger.LogError("Reading all entities failed.\n" +
+                    ex.Message);
+                throw new HttpRequestException($"Reading all entities failed with error.\n{ex.Message}", ex, HttpStatusCode.InternalServerError);
+            }
+        }
+
+        //Get the current highest id in the table by querying all data and comparing
+        private async Task<int> GetHighestIdOld()
+        {
+            try
+            {
+                int currentId = startId;
+                if (!memoryCache.TryGetValue("CurrentProjectId", out currentId))
+                {
+                    List<Entity> entities = new List<Entity>();
+                    //Creating table query to query all project entities
+                    TableQuerySegment<Entity> querySegment = null;
+                    TableQuery<Entity> tableQuery = new TableQuery<Entity>();
+
+                    while (querySegment == null || querySegment.ContinuationToken != null)
+                    {
+                        querySegment = await table.ExecuteQuerySegmentedAsync<Entity>(tableQuery, querySegment != null ? querySegment.ContinuationToken : null);
+                        entities.AddRange(querySegment.Results);
+                    }
+
+                    //Iterating through all entities and comparing their id
                     int tempId = 0;
                     foreach (Entity entity in entities)
                     {
                         int entityId = int.Parse(entity.PartitionKey);
                         tempId = tempId < entityId ? entityId : tempId;
                     }
+
+                    //Use startId if tempId is smaller than startId - 0 (no entries present)
                     currentId = tempId < startId ? startId : tempId;
-                    memoryCache.Set("CurrentTaskId", currentId);
+                    memoryCache.Set("CurrentProjectId", currentId);
                 }
                 return currentId;
 

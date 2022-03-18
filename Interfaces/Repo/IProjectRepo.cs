@@ -15,6 +15,6 @@ namespace Interfaces.Repo
         public Task UpdateAsync(ProjectEntity entity);
         public Task DeleteAsync(Entity entity);
 
-        public Task<bool> Exists(int id);
+        public Task<bool> Exists(string value, string key = "PartitionKey");
     }
 }
