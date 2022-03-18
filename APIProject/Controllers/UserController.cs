@@ -15,7 +15,9 @@ namespace APIProject.Controllers
     {
         private ILogger<UserController> logger;
         private IUserService userService;
-        
+
+        //User controller is not yet provide a way to handle user data
+        //And is only checking if user data is valid(please check Repo/UserRepo.cs for user data)
 
         public UserController(IUserService _userService, ILogger<UserController> _logger)
         {

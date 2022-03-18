@@ -12,8 +12,9 @@ namespace Repo
     {
         private List<UserDetails> _users = new List<UserDetails>
         {
-            new UserDetails {Id = Guid.NewGuid(), Name = "Milos", LastName = "Arsenijevic", Username = "admin", Password = "admin", UserRole = UserRoles.Admin},
-            new UserDetails {Id = Guid.NewGuid(), Name = "Milos", LastName = "Arsenijevic", Username = "test", Password = "test", UserRole = UserRoles.User},
+            new UserDetails {Id = Guid.NewGuid(), Name = "Admin", LastName = "Test", Username = "admin", Password = "admin", UserRole = UserRoles.Admin},
+            new UserDetails {Id = Guid.NewGuid(), Name = "Manager", LastName = "Test", Username = "manager", Password = "manager", UserRole = UserRoles.Manager},
+            new UserDetails {Id = Guid.NewGuid(), Name = "User", LastName = "Test", Username = "test", Password = "test", UserRole = UserRoles.User},
         };
 
         public bool IsValidUser(UserCreds userCreds, out UserAuth userAccount)

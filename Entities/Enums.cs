@@ -15,8 +15,11 @@ namespace Entities.Enums
 
     public enum TaskState
     {
-        Open,
-        Closed,
+        Pending,
+        Active,
+        Paused,
+        Completed,
+        Abandoned,
         Archived
     }
 
@@ -26,7 +29,7 @@ namespace Entities.Enums
         Manager,
         User,
         Guest,
-        Unauthorized
+        Unauthorized //Not used
     }
 
     
