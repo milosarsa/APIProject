@@ -7,6 +7,8 @@ using Entities.Enums;
 
 namespace Entities.Auth
 {
+
+    //Using records for user auth details to avoid copying data but only use a reference to the value
     public record UserAuth(Guid Id, string Username, string UserRole, string Token);
     public record UserCreds(string Username, string Password);
 

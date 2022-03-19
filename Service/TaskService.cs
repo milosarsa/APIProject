@@ -21,7 +21,7 @@ namespace Service
         }
         public async Task CreateTask(int projectId, TaskBaseModel task)
         {
-            if(!await projectRepo.Exists(projectId))
+            if(!await projectRepo.Exists(projectId.ToString()))
                 throw new HttpRequestException("Project doesn't exist!", null, HttpStatusCode.NotFound);
 
             TaskEntity taskEntity = Mapper.TaskBaseObjectToEntity(task, true);

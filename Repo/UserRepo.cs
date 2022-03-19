@@ -26,6 +26,7 @@ namespace Repo
                 return false;
             }
 
+            //We are passing user auth details without a token as it will be generated later
             userAccount = new UserAuth(user.Id,user.Username, Enum.GetName<UserRoles>(user.UserRole), "");
             return true;
         }
