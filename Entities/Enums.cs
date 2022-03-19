@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Entities.Enums
+﻿namespace Entities.Enums
 {
     public enum ProjectState
     {
@@ -35,15 +28,15 @@ namespace Entities.Enums
 
     public static class Enums
     {
-        public static string GetName(this Enum @enum) 
+        public static string GetName(this Enum @enum)
         {
             Type type = @enum.GetType();
 
             return type.GetEnumName(@enum) ?? String.Empty;
         }
 
-        
+
     }
 
-    
+
 }

@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Net;
+﻿using Entities.Model;
 using Interfaces.Service;
-using Entities.Model;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace APIProject.Controllers
 {
@@ -36,7 +36,7 @@ namespace APIProject.Controllers
 
                 await projectService.CreateProject(project);
 
-                return Created("",project);
+                return Created("", project);
             }
             catch (HttpRequestException ex)
             {
@@ -108,7 +108,7 @@ namespace APIProject.Controllers
                 logger.LogError("Task failed during data access\n" +
                     ex.Message);
                 HttpStatusCode statusCode;
-                if(ex.StatusCode.HasValue)
+                if (ex.StatusCode.HasValue)
                 {
                     statusCode = ex.StatusCode.Value;
                 }
@@ -116,9 +116,9 @@ namespace APIProject.Controllers
                 {
                     statusCode = HttpStatusCode.InternalServerError;
                 }
-                return StatusCode((int)statusCode, ex.Message) ;
+                return StatusCode((int)statusCode, ex.Message);
             }
-            catch(Exception ex)
+            catch (Exception ex)
             {
                 logger.LogError("Task execution failed\n" +
                     ex.Message);

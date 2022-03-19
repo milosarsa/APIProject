@@ -1,8 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Net;
+﻿using Entities.Model;
 using Interfaces.Service;
-using Entities.Model;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Mvc;
+using System.Net;
 
 namespace APIProject.Controllers
 {

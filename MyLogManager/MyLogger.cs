@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Logging;
-
-namespace MyLogManager
+﻿namespace MyLogManager
 {
     public class MyLogger
     {

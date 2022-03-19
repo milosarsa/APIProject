@@ -1,11 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net;
 
 
 namespace Repo
@@ -23,18 +16,9 @@ namespace Repo
         {
             logger = _logger ?? throw new ArgumentNullException(nameof(logger));
             memoryCache = _memoryCache ?? throw new ArgumentNullException(nameof(memoryCache));
-            try
-            {
-                CloudTableClient _tableClient = storageAccount.CreateCloudTableClient();
-                table = _tableClient.GetTableReference(tableName);
-                table.CreateIfNotExistsAsync();
-            }
-            catch (Exception ex)
-            {
-                _logger.LogError("Storage Account init failed.\n" +
-                    ex.Message);
-                throw new HttpRequestException("Storage account init failed.", ex, HttpStatusCode.InternalServerError);
-            }
+            CloudTableClient _tableClient = storageAccount.CreateCloudTableClient();
+            table = _tableClient.GetTableReference(tableName);
+            table.CreateIfNotExistsAsync();
         }
 
         public async Task<int> CreateAsync(TaskEntity entity)
@@ -43,20 +27,20 @@ namespace Repo
             currentId++;
             entity.PartitionKey = currentId.ToString();
 
-            memoryCache.Set("CurrentTaskId",currentId);
+            memoryCache.Set("CurrentTaskId", currentId);
             TableOperation tableOperation = TableOperation.Insert(entity);
             TableResult tableResult = await table.ExecuteAsync(tableOperation);
             if (tableResult.HttpStatusCode == 204)
                 return currentId;
             else
                 throw new HttpRequestException("Entity creation failed.", null, (HttpStatusCode)tableResult.HttpStatusCode);
-            
+
         }
 
         public async Task<List<TaskEntity>> ReadAllAsync()
         {
             List<TaskEntity> entities = new List<TaskEntity>();
-            
+
             //Creating table query to query all Task entities
             TableQuerySegment<TaskEntity>? querySegment = null;
             TableQuery<TaskEntity> tableQuery = new TableQuery<TaskEntity>();
@@ -68,13 +52,13 @@ namespace Repo
             }
             return entities;
 
-            
+
         }
 
         public async Task<List<TaskEntity>> ReadByKeyAsync(int key)
         {
             List<TaskEntity> entities = new List<TaskEntity>();
-            
+
             //Creating table query to query all Task entities
             TableQuerySegment<TaskEntity>? querySegment = null;
             TableQuery<TaskEntity> tableQuery = new TableQuery<TaskEntity>();
@@ -102,71 +86,52 @@ namespace Repo
                 return entity; ;
             }
             else
-            {
                 throw new HttpRequestException("Entity not found.", null, HttpStatusCode.NotFound);
-            }
         }
 
         public async Task UpdateAsync(TaskEntity entity)
         {
             entity.ETag = "*";
-            
+
             if (await Exists(entity))
             {
                 TableOperation tableOperation = TableOperation.Merge(entity);
                 TableResult tableResult = await table.ExecuteAsync(tableOperation);
-                if (tableResult.HttpStatusCode == 200)
+                if (tableResult.HttpStatusCode != 204)
                 {
-                    return;
-                }
-                else
-                {
-                    logger.LogError($"Update failed!\nTable operation returned {((HttpStatusCode)tableResult.HttpStatusCode).ToString()} status");
+                    logger.LogError($"Update failed!\nTable operation returned {(HttpStatusCode)tableResult.HttpStatusCode} status");
                     throw new HttpRequestException("Update failed.", null, (HttpStatusCode)tableResult.HttpStatusCode);
                 }
+                return;
             }
             else
-            {
                 throw new HttpRequestException("Entity not found.", null, HttpStatusCode.NotFound);
-            }
-            
+
         }
         public async Task DeleteAsync(Entity entity)
         {
-                if (await Exists(entity))
-                {
-                    TableOperation tableOperation = TableOperation.Delete(entity);
-                    TableResult tableResult = await table.ExecuteAsync(tableOperation);
-                    if (tableResult.HttpStatusCode == 204)
-                    {
-                        return;
-                    }
-                    else
-                    {
-                        throw new HttpRequestException("Delete failed.", null, (HttpStatusCode)tableResult.HttpStatusCode);
-                    }
-                }
+            if (await Exists(entity))
+            {
+                TableOperation tableOperation = TableOperation.Delete(entity);
+                TableResult tableResult = await table.ExecuteAsync(tableOperation);
+                if (tableResult.HttpStatusCode == 204)
+                    return;
                 else
-                {
-                    throw new HttpRequestException("Entity not found.", null, HttpStatusCode.NotFound);
-                }
+                    throw new HttpRequestException("Delete failed.", null, (HttpStatusCode)tableResult.HttpStatusCode);
+            }
+            else
+                throw new HttpRequestException("Entity not found.", null, HttpStatusCode.NotFound);
         }
 
         //Checking to see if the entity exists in the table using a provided entity partitionKey and rowKey
         public async Task<bool> Exists(Entity entity)
         {
-            //Try to retrieve entity, returns false if status code is 404 
-            
+            //Try to retrieve entity
+
             TableOperation tableOperation = TableOperation.Retrieve(entity.PartitionKey, entity.RowKey);
             TableResult tableResult = await table.ExecuteAsync(tableOperation);
-            if (tableResult.HttpStatusCode == 404)
-            {
-                return false;
-            }
-            else if (tableResult.HttpStatusCode == 200)
-            {
+            if (tableResult.HttpStatusCode == 200)
                 return true;
-            }
             return false;
         }
 
@@ -176,26 +141,22 @@ namespace Repo
         // Exists("MyProjectName", "RowKey")
         public async Task<bool> Exists(string value, string key = "PartitionKey")
         {
-                List<Entity> entities = new List<Entity>();
-                TableQuerySegment<Entity>? querySegment = null;
-                TableQuery<Entity> tableQuery = new TableQuery<Entity>();
-                tableQuery.Where(TableQuery.GenerateFilterCondition(key, QueryComparisons.Equal, value));
+            List<Entity> entities = new List<Entity>();
+            TableQuerySegment<Entity>? querySegment = null;
+            TableQuery<Entity> tableQuery = new TableQuery<Entity>();
+            tableQuery.Where(TableQuery.GenerateFilterCondition(key, QueryComparisons.Equal, value));
 
+            while (querySegment == null || querySegment.ContinuationToken != null)
+            {
+                querySegment = await table.ExecuteQuerySegmentedAsync<Entity>(tableQuery, querySegment != null ? querySegment.ContinuationToken : null);
+                entities.AddRange(querySegment.Results);
+            }
 
-                while (querySegment == null || querySegment.ContinuationToken != null)
-                {
-                    querySegment = await table.ExecuteQuerySegmentedAsync<Entity>(tableQuery, querySegment != null ? querySegment.ContinuationToken : null);
-                    entities.AddRange(querySegment.Results);
-                }
-
-                if (entities.Any())
-                {
-                    return true;
-                }
-                else
-                {
-                    return false;
-                }
+            if (entities.Any())
+                return true;
+            else
+                return false;
+            
         }
 
         //Query all the entities in the current table and return the highest id
@@ -215,18 +176,17 @@ namespace Repo
                     querySegment = await table.ExecuteQuerySegmentedAsync<Entity>(tableQuery, querySegment != null ? querySegment.ContinuationToken : null);
                     entities.AddRange(querySegment.Results);
                 }
-
-                int entityId = int.Parse(entities.LastOrDefault()?.PartitionKey ?? "0");
+                int.TryParse(entities.LastOrDefault()?.PartitionKey, out currentId);
 
                 //Use startId if tempId is smaller than startId - 0 (no entries present)
-                currentId = entityId < startId ? startId : entityId;
+                currentId = currentId  < startId ? startId : currentId;
                 memoryCache.Set("CurrentProjectId", currentId);
             }
             return currentId;
-            
+
         }
 
-        
+
     }
 }
 
