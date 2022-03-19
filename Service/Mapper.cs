@@ -24,9 +24,12 @@ namespace Service
             projectEntity.RowKey = project.Name;
             projectEntity.Description = project.Description;
             projectEntity.Tasks = MySerializer.ListToString(new List<int>());
-            projectEntity.Code = project.Code;
+            
             if (newProject)
+            {
+                projectEntity.Code = String.Empty;
                 projectEntity.State = 0;
+            }
 
             return projectEntity;
         }

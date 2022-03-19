@@ -53,7 +53,8 @@ namespace Service
 
             string token = GenerateToken(_userAuth);
 
-            _userAuth = new UserAuth(_userAuth.Id, _userAuth.Username, _userAuth.UserRole, token);
+            _userAuth = _userAuth with { Token = token };
+                //new UserAuth(_userAuth.Id, _userAuth.Username, _userAuth.UserRole, token);
             return true;
         }
     }

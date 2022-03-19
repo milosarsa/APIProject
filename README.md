@@ -55,14 +55,15 @@ For testing purposed please use local azure storage emulator
 - Comments :)
 - Definitions
 - Performance improvements
-- MyLogger - Custom logger library for capturing, processing, printing and storing logs. (Azure Table, Console, File)
+- MyLogger - Custom logger library for capturing, processing, printing and storing logs. (Azure Table, Console, Local File, Azure Blob File)
 - Azure Key Vault
 - Azure Blob Storage 
 - Azure Queue
 - Memory cache
 - Soft delete
-- Proper user storing authentication (Password hashing, DB)
+- Proper user storing managing and authentication (Password hashing, DB)
 - Security
 - Proper Exception handling
 - API Definition
 - API Versioning
+- Handle and log Unauthorized and Forbidden request (to better track any unwanted requests)
