@@ -14,7 +14,7 @@ namespace Service
             project.Description = projectEntity.Description;
             project.Tasks = MySerializer.StringToList(projectEntity.Tasks);
             project.Code = projectEntity.Code;
-            project.State = Enum.GetName<ProjectState>((ProjectState)projectEntity.State);
+            project.State = ((ProjectState)projectEntity.State).GetName();
             return project;
         }
 
@@ -36,11 +36,10 @@ namespace Service
         public static TaskModel TaskEntityToObject(TaskEntity taskEntity)
         {
             TaskModel task = new TaskModel();
-            task.Id = int.Parse(taskEntity.PartitionKey);
             task.ProjectId = int.Parse(taskEntity.RowKey);
             task.Name = taskEntity.Name;
             task.Description = taskEntity.Description;
-            task.State = Enum.GetName<TaskState>((TaskState)taskEntity.State);
+            task.State = ((TaskState)taskEntity.State).GetName();
             return task;
         }
 
@@ -48,6 +47,7 @@ namespace Service
         {
             TaskEntity taskEntity = new TaskEntity();
             taskEntity.Name = taskBase.Name;
+            taskEntity.RowKey = taskBase.ProjectId.ToString();
             taskEntity.Description = taskBase.Description;
             if(newTask)
                 taskEntity.State = 0;

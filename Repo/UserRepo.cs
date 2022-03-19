@@ -17,17 +17,22 @@ namespace Repo
             new UserDetails {Id = Guid.NewGuid(), Name = "User", LastName = "Test", Username = "test", Password = "test", UserRole = UserRoles.User},
         };
 
-        public bool IsValidUser(UserCreds userCreds, out UserAuth userAccount)
+        public bool IsValidUser(UserCreds? userCreds, out UserAuth userAccount)
         {
-            UserDetails user = _users.SingleOrDefault(x => x.Username == userCreds.Username && x.Password == userCreds.Password);
+            UserDetails user = _users.SingleOrDefault(x =>
+            {
+                return x.Username == userCreds.Username&& x.Password == userCreds.Password;
+            }) ?? new UserDetails();
+
+
             if (user == null)
             {
-                userAccount = new UserAuth(Guid.Empty, "", Enum.GetName<UserRoles>(UserRoles.Unauthorized), "");
+                userAccount = new UserAuth();
                 return false;
             }
 
             //We are passing user auth details without a token as it will be generated later
-            userAccount = new UserAuth(user.Id,user.Username, Enum.GetName<UserRoles>(user.UserRole), "");
+            userAccount = new UserAuth(user.Id,user.Username, user.UserRole.GetName());
             return true;
         }
     }

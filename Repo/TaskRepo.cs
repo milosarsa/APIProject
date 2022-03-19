@@ -58,7 +58,7 @@ namespace Repo
             List<TaskEntity> entities = new List<TaskEntity>();
             
             //Creating table query to query all Task entities
-            TableQuerySegment<TaskEntity> querySegment = null;
+            TableQuerySegment<TaskEntity>? querySegment = null;
             TableQuery<TaskEntity> tableQuery = new TableQuery<TaskEntity>();
 
             while (querySegment == null || querySegment.ContinuationToken != null)
@@ -76,7 +76,7 @@ namespace Repo
             List<TaskEntity> entities = new List<TaskEntity>();
             
             //Creating table query to query all Task entities
-            TableQuerySegment<TaskEntity> querySegment = null;
+            TableQuerySegment<TaskEntity>? querySegment = null;
             TableQuery<TaskEntity> tableQuery = new TableQuery<TaskEntity>();
             tableQuery.Where(TableQuery.GenerateFilterCondition("RowKey", QueryComparisons.Equal, key.ToString()));
 
@@ -91,7 +91,7 @@ namespace Repo
 
         public async Task<TaskEntity> ReadAsync(int id)
         {
-            TableQuerySegment<TaskEntity> querySegment = null;
+            TableQuerySegment<TaskEntity>? querySegment = null;
             TableQuery<TaskEntity> tableQuery = new TableQuery<TaskEntity>();
             tableQuery.Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, id.ToString()));
 
@@ -177,7 +177,7 @@ namespace Repo
         public async Task<bool> Exists(string value, string key = "PartitionKey")
         {
                 List<Entity> entities = new List<Entity>();
-                TableQuerySegment<Entity> querySegment = null;
+                TableQuerySegment<Entity>? querySegment = null;
                 TableQuery<Entity> tableQuery = new TableQuery<Entity>();
                 tableQuery.Where(TableQuery.GenerateFilterCondition(key, QueryComparisons.Equal, value));
 
@@ -207,7 +207,7 @@ namespace Repo
             {
                 List<Entity> entities = new List<Entity>();
                 //Creating table query to query all project entities
-                TableQuerySegment<Entity> querySegment = null;
+                TableQuerySegment<Entity>? querySegment = null;
                 TableQuery<Entity> tableQuery = new TableQuery<Entity>();
 
                 while (querySegment == null || querySegment.ContinuationToken != null)

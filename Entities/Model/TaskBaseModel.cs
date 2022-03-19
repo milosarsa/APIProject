@@ -8,12 +8,12 @@ namespace Entities.Model
     {
 
         [Required(ErrorMessage = "Project Id is required")]
-        public int Id { get; set; }
+        public int ProjectId { get; set; }
 
         [Required(ErrorMessage = "Name is required")]
-        public string Name { get; set; }
+        public string? Name { get; set; }
 
         [AllowNull]
-        public string Description { get; set; }
+        public string? Description { get; set; }
     }
 }

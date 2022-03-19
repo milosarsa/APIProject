@@ -20,7 +20,7 @@ namespace APIProject.Controllers
             logger = _logger ?? throw new ArgumentNullException(nameof(logger));
         }
         //Responsible for data presentation and input
-        [HttpPost("Project")]
+        [HttpPost("Create")]
         [Authorize(Policy = "Manager")]
         public async Task<IActionResult> CreateProject([FromBody] ProjectBaseModel project)
         {
@@ -63,7 +63,7 @@ namespace APIProject.Controllers
 
         }
 
-        [HttpGet("Projects")]
+        [HttpGet("AllProjects")]
         public async Task<IActionResult> GetAllProjects()
         {
             try
@@ -95,12 +95,12 @@ namespace APIProject.Controllers
             }
         }
 
-        [HttpGet("Project/{id}")]
-        public async Task<IActionResult> GetProject(int id)
+        [HttpGet("{projectId}")]
+        public async Task<IActionResult> GetProject(int projectId)
         {
             try
             {
-                ProjectModel project = await projectService.GetProject(id);
+                ProjectModel project = await projectService.GetProject(projectId);
                 return Ok(project);
             }
             catch (HttpRequestException ex)
@@ -127,9 +127,9 @@ namespace APIProject.Controllers
             }
         }
 
-        [HttpPut("Project/{id}")]
+        [HttpPut("{projectId}/Update")]
         [Authorize(Policy = "Manager")]
-        public async Task<IActionResult> UpdateProject(int id, [FromBody] ProjectBaseModel project)
+        public async Task<IActionResult> UpdateProject(int projectId, [FromBody] ProjectBaseModel project)
         {
             try
             {
@@ -141,7 +141,7 @@ namespace APIProject.Controllers
                     return BadRequest("Invalid model state.");
                 }
 
-                await projectService.UpdateProject(id, project);
+                await projectService.UpdateProject(projectId, project);
                 return Ok("Project updated!");
             }
             catch (HttpRequestException ex)
@@ -167,9 +167,9 @@ namespace APIProject.Controllers
                 return StatusCode((int)HttpStatusCode.InternalServerError, ex.Message);
             }
         }
-        [HttpPut("Project/{id}/UpdateState")]
+        [HttpPut("{projectId}/UpdateState")]
         [Authorize(Policy = "Manager")]
-        public async Task<IActionResult> UpdateProjectState(int id, [FromForm] ProjectState projectState)
+        public async Task<IActionResult> UpdateProjectState(int projectId, [FromForm] ProjectState projectState)
         {
             try
             {
@@ -181,7 +181,7 @@ namespace APIProject.Controllers
                     return BadRequest("Invalid model state.");
                 }
 
-                await projectService.UpdateProjectState(id, projectState);
+                await projectService.UpdateProjectState(projectId, projectState);
                 return Ok("Project updated!");
             }
             catch (HttpRequestException ex)
@@ -208,9 +208,9 @@ namespace APIProject.Controllers
             }
         }
 
-        [HttpDelete("Project/{id}")]
+        [HttpDelete("{projectId}/Delete")]
         [Authorize(Policy = "Admin")]
-        public async Task<IActionResult> DeleteProject(int id)
+        public async Task<IActionResult> DeleteProject(int projectId)
         {
             try
             {
@@ -219,7 +219,7 @@ namespace APIProject.Controllers
                     return BadRequest("Invalid model state.");
                 }
 
-                await projectService.DeleteProject(id);
+                await projectService.DeleteProject(projectId);
                 return Ok("Project deleted");
             }
             catch (HttpRequestException ex)
