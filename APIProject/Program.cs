@@ -1,5 +1,6 @@
 global using Entities.Enums;
 using APIProject;
+using MyLog;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -14,6 +15,8 @@ builder.Services.AddAndConfigureTransientDI();
 builder.Services.AddMemoryCache();
 builder.Services.AddAndConfigureAuthentication(builder.Configuration); //Need to finish this, read encoding string from app.config
 builder.Services.AddAndConfigureAuthorization();//Add policy based authorization
+builder.Services.ConfigureMyLogger();
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.

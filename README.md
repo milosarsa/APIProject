@@ -55,7 +55,8 @@ For testing purposed please use local azure storage emulator
 - Comments :)
 - Definitions
 - Performance improvements
-- MyLogger - Custom logger library for capturing, processing, printing and storing logs. (Azure Table, Console, Local File, Azure Blob File)
+- MyLogger. (Currently abandoned, using serilog) - Custom logger library for capturing, processing, printing and storing logs. (Azure Table, Console, Local File, Azure Blob File)
+- Serilog
 - Azure Key Vault
 - Azure Blob Storage 
 - Azure Queue

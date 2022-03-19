@@ -3,6 +3,7 @@ using Interfaces.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
+using MyLog;
 
 namespace APIProject.Controllers
 {
@@ -14,10 +15,12 @@ namespace APIProject.Controllers
     {
         ILogger<ProjectController> logger;
         IProjectService projectService;
-        public ProjectController(IProjectService _projectService, ILogger<ProjectController> _logger)
+        IMyLogger myLogger;
+        public ProjectController(IProjectService _projectService, ILogger<ProjectController> _logger, IMyLogger _myLogger)
         {
             projectService = _projectService ?? throw new ArgumentNullException(nameof(projectService));
             logger = _logger ?? throw new ArgumentNullException(nameof(logger));
+            myLogger = _myLogger ?? throw new ArgumentNullException(nameof(myLogger));
         }
         //Responsible for data presentation and input
         [HttpPost("Create")]

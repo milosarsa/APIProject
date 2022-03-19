@@ -46,10 +46,12 @@ namespace Service
         {
             TaskEntity taskEntity = new TaskEntity();
             taskEntity.Name = taskBase.Name;
-            taskEntity.RowKey = taskBase.ProjectId.ToString();
             taskEntity.Description = taskBase.Description;
             if (newTask)
+            {
+                taskEntity.RowKey = taskBase.ProjectId.ToString();
                 taskEntity.State = 0;
+            }
             return taskEntity;
         }
     }
