@@ -19,13 +19,13 @@ namespace Service
             logger = _logger ?? throw new ArgumentNullException(nameof(logger));
             projectRepo = _projectRepo ?? throw new ArgumentNullException(nameof(projectRepo));
         }
-        public async Task CreateTask(int projectId, TaskBaseModel task)
+        public async Task CreateTask(TaskBaseModel task)
         {
+            int projectId = task.ProjectId;
             if(!await projectRepo.Exists(projectId.ToString()))
                 throw new HttpRequestException("Project doesn't exist!", null, HttpStatusCode.NotFound);
 
             TaskEntity taskEntity = Mapper.TaskBaseObjectToEntity(task, true);
-            taskEntity.RowKey = projectId.ToString();
             int taskId = await taskRepo.CreateAsync(taskEntity);
             List<int> projectTasks = await GetProjectTasks(projectId);
             if (projectTasks.Contains(taskId))
@@ -72,11 +72,10 @@ namespace Service
             return task;
         }
 
-        public async Task UpdateTask(int projectId,int id, TaskBaseModel task)
+        public async Task UpdateTask(int id, TaskBaseModel task)
         {
             TaskEntity taskEntity = Mapper.TaskBaseObjectToEntity(task);
             taskEntity.PartitionKey = id.ToString();
-            taskEntity.RowKey = projectId.ToString();
             await taskRepo.UpdateAsync(taskEntity);
         }
         public async Task DeleteTask(int id)

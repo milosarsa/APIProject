@@ -32,13 +32,14 @@ namespace Repo
             int currentId = await GetHighestId();
             currentId++;
             entity.PartitionKey = currentId.ToString();
-
-            memoryCache.Set("CurrentProjectId", currentId);
-            //Checking if project with given name already exists
-            if(await Exists(entity.RowKey, "RowKey"))
+            if (await Exists(entity.RowKey, "RowKey"))
             {
                 throw new HttpRequestException($"Project with that name already exists.", null, HttpStatusCode.Conflict);
             }
+
+            memoryCache.Set("CurrentProjectId", currentId);
+            //Checking if project with given name already exists
+            
 
             TableOperation tableOperation = TableOperation.Insert(entity);
             TableResult tableResult = await table.ExecuteAsync(tableOperation);
@@ -52,7 +53,7 @@ namespace Repo
         {
             List<ProjectEntity> entities = new List<ProjectEntity>();
             //Creating table query to query all project entities
-            TableQuerySegment<ProjectEntity> querySegment = null;
+            TableQuerySegment<ProjectEntity>? querySegment = null;
             TableQuery<ProjectEntity> tableQuery = new TableQuery<ProjectEntity>();
 
             while (querySegment == null || querySegment.ContinuationToken != null)
@@ -65,7 +66,7 @@ namespace Repo
 
         public async Task<ProjectEntity> ReadAsync(int id)
         {
-            TableQuerySegment<ProjectEntity> querySegment = null;
+            TableQuerySegment<ProjectEntity>? querySegment = null;
             TableQuery<ProjectEntity> tableQuery = new TableQuery<ProjectEntity>();
             tableQuery.Where(TableQuery.GenerateFilterCondition("PartitionKey", QueryComparisons.Equal, id.ToString()));
             querySegment = await table.ExecuteQuerySegmentedAsync<ProjectEntity>(tableQuery, null);
@@ -149,7 +150,7 @@ namespace Repo
         public async Task<bool> Exists(string value, string key = "PartitionKey")
         {
             List<Entity> entities = new List<Entity>();
-            TableQuerySegment<Entity> querySegment = null;
+            TableQuerySegment<Entity>? querySegment = null;
             TableQuery<Entity> tableQuery = new TableQuery<Entity>();
             tableQuery.Where(TableQuery.GenerateFilterCondition(key, QueryComparisons.Equal, value));
 
@@ -179,7 +180,7 @@ namespace Repo
                 {
                     List<Entity> entities = new List<Entity>();
                     //Creating table query to query all project entities
-                    TableQuerySegment<Entity> querySegment = null;
+                    TableQuerySegment<Entity>? querySegment = null;
                     TableQuery<Entity> tableQuery = new TableQuery<Entity>();
 
                     while (querySegment == null || querySegment.ContinuationToken != null)
@@ -209,7 +210,7 @@ namespace Repo
                 {
                     List<Entity> entities = new List<Entity>();
                     //Creating table query to query all project entities
-                    TableQuerySegment<Entity> querySegment = null;
+                    TableQuerySegment<Entity>? querySegment = null;
                     TableQuery<Entity> tableQuery = new TableQuery<Entity>();
 
                     while (querySegment == null || querySegment.ContinuationToken != null)

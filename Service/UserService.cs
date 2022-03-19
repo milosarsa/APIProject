@@ -29,7 +29,7 @@ namespace Service
             var claim = new List<Claim>
             {
                 new Claim(ClaimTypes.NameIdentifier, userAuth.Id.ToString()),
-                new Claim(ClaimTypes.Name, userAuth.Username),
+                new Claim(ClaimTypes.Name, userAuth.UserName),
                 new Claim(ClaimTypes.Role, userAuth.UserRole),
                 new Claim(JwtRegisteredClaimNames.Exp, new DateTimeOffset(DateTime.Now).ToUnixTimeSeconds().ToString())
             };

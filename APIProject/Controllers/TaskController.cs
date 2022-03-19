@@ -6,7 +6,7 @@ using Microsoft.AspNetCore.Authorization;
 
 namespace APIProject.Controllers
 {
-    [Route("api/")]
+    [Route("api/[controller]")]
     [ApiController]
     [Authorize(Policy = "User")]
     public class TaskController : Controller
@@ -19,9 +19,9 @@ namespace APIProject.Controllers
             logger = _logger ?? throw new ArgumentNullException(nameof(logger));
         }
         //Responsible for data presentation and input
-        [HttpPost("Project/{projectId}/Task")]
+        [HttpPost("Create")]
         [Authorize(Policy = "Manager")]
-        public async Task<IActionResult> CreateTask(int projectId, [FromBody] TaskBaseModel task)
+        public async Task<IActionResult> CreateTask([FromBody] TaskBaseModel task)
         {
             try
             {
@@ -33,7 +33,7 @@ namespace APIProject.Controllers
                     return BadRequest("Invalid model state.");
                 }
 
-                await taskService.CreateTask(projectId, task);
+                await taskService.CreateTask(task);
 
                 return Created("", task);
             }
@@ -62,7 +62,7 @@ namespace APIProject.Controllers
 
         }
 
-        [HttpGet("Tasks")]
+        [HttpGet("AllTasks")]
         public async Task<IActionResult> GetAllTasks()
         {
             try
@@ -94,7 +94,7 @@ namespace APIProject.Controllers
             }
         }
 
-        [HttpGet("Project/{projectId}/Tasks")]
+        [HttpGet("Project/{projectId}")]
         public async Task<IActionResult> GetAllTasksByProject(int projectId)
         {
             try
@@ -126,12 +126,12 @@ namespace APIProject.Controllers
             }
         }
 
-        [HttpGet("Task/{id}")]
-        public async Task<IActionResult> GetTask(int id)
+        [HttpGet("{taskId}")]
+        public async Task<IActionResult> GetTask(int taskId)
         {
             try
             {
-                TaskModel task = await taskService.GetTask(id);
+                TaskModel task = await taskService.GetTask(taskId);
                 return Ok(task);
             }
             catch (HttpRequestException ex)
@@ -158,9 +158,9 @@ namespace APIProject.Controllers
             }
         }
 
-        [HttpPut("Project/{projectId}/Task/{id}")]
+        [HttpPut("{taskId}/Update")]
         [Authorize(Policy = "Manager")]
-        public async Task<IActionResult> UpdateTask(int projectId,int id, [FromBody] TaskBaseModel task)
+        public async Task<IActionResult> UpdateTask(int taskId, [FromBody] TaskBaseModel task)
         {
             try
             {
@@ -172,7 +172,7 @@ namespace APIProject.Controllers
                     return BadRequest("Invalid model state.");
                 }
 
-                await taskService.UpdateTask(projectId, id, task);
+                await taskService.UpdateTask(taskId, task);
                 return Ok("Task updated!");
             }
             catch (HttpRequestException ex)
@@ -199,9 +199,9 @@ namespace APIProject.Controllers
             }
         }
 
-        [HttpPut("TaskProject/{id}/UpdateState")]
+        [HttpPut("{taskId}/UpdateState")]
         [Authorize(Policy = "Manager")]
-        public async Task<IActionResult> UpdateTaskState(int id, [FromForm] TaskState taskState)
+        public async Task<IActionResult> UpdateTaskState(int taskId, [FromForm] TaskState taskState)
         {
             try
             {
@@ -213,7 +213,7 @@ namespace APIProject.Controllers
                     return BadRequest("Invalid model state.");
                 }
 
-                await taskService.UpdateTaskState(id, taskState);
+                await taskService.UpdateTaskState(taskId, taskState);
                 return Ok("Project updated!");
             }
             catch (HttpRequestException ex)
@@ -241,9 +241,9 @@ namespace APIProject.Controllers
         }
 
 
-        [HttpDelete("Task/{id}")]
+        [HttpDelete("{taskId}/Delete")]
         [Authorize(Policy = "Admin")]
-        public async Task<IActionResult> DeleteTask(int id)
+        public async Task<IActionResult> DeleteTask(int taskId)
         {
             try
             {
@@ -252,7 +252,7 @@ namespace APIProject.Controllers
                     return BadRequest("Invalid model state.");
                 }
 
-                await taskService.DeleteTask(id);
+                await taskService.DeleteTask(taskId);
                 return Ok("Task deleted");
             }
             catch (HttpRequestException ex)
