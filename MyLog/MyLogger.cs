@@ -30,7 +30,8 @@ namespace MyLog
         }
 
 
-        //This is ment to be ran without await, need to run this independently and there is no need to wait for a response as it's printing it :)
+        //This is ment to be ran without await (not sure if correct, just don't want to block the caller)
+        //Need to run this independently and there is no need to wait for a response as it's printing it :) 
         async Task DoLogAsync(Log log, LogType logType = 0)
         {
             await Task.Run(() =>

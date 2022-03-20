@@ -23,16 +23,23 @@ namespace MyLog
         //Logs output format: StackTrace\t Error message?, Status code?  \n Exception message?
 
         //consoleTraceListener will always output to console so setting the value here
-
+        //Defining output stream for below listeners
         static TextWriterTraceListener _consoleTraceListener = new(System.Console.Out);
         static TextWriterTraceListener _fileTraceListener = new();
         public static void ConfigureLogger()
         {
 
             string getCurrentTimeStamp = DateTime.Now.ToString();
-            string logName = "Log-" + getCurrentTimeStamp + ".txt" ;
+            string logName = "log.txt" ;
             File.Create(logName);
 
+
+
+            //Independent calls to consoleTrace not printing (not sure why), fileTrace prints successfuly
+            //For now using Trace.WriteLine for printing
+
+            //Defining and adding listeners
+            //Trace.Write will only write to listeners added using Trace.Listener 
             _consoleTraceListener = new TextWriterTraceListener(System.Console.Out);
             _fileTraceListener = new TextWriterTraceListener(logName);
             Trace.Listeners.Add(_consoleTraceListener);

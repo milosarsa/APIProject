@@ -15,12 +15,10 @@ namespace APIProject.Controllers
     {
         ILogger<ProjectController> logger;
         IProjectService projectService;
-        IMyLogger myLogger;
-        public ProjectController(IProjectService _projectService, ILogger<ProjectController> _logger, IMyLogger _myLogger)
+        public ProjectController(IProjectService _projectService, ILogger<ProjectController> _logger)
         {
             projectService = _projectService ?? throw new ArgumentNullException(nameof(projectService));
             logger = _logger ?? throw new ArgumentNullException(nameof(logger));
-            myLogger = _myLogger ?? throw new ArgumentNullException(nameof(myLogger));
         }
         //Responsible for data presentation and input
         [HttpPost("Create")]

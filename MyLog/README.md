@@ -1,6 +1,6 @@
 ﻿#MyLogger
 
-##Abandoned for now, will exchange with serilog(Too much work, will continuo later on)
+##Abandoned for now, will exchange with serilog(Too much work, will maybe continue later on)
 
 
 ## Needs to be implemented and renamed ty MyLog
@@ -11,15 +11,12 @@ Provide an independent library for capturing, processing, printing and storing l
 Needs to be implemented
 
 
-Logs -> Queue -> Table(myLogs)
-
 All data output can be configured to output a certain level of data
-	Ex.Console output does not log inner exception message
 	Full exception messages by default present only in file, table log form
 	Maybe use a sepparate config file
 
 
-MyException - 
+Log - 
 - Message?
 - Status code?
 - InnerException?
