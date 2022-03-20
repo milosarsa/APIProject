@@ -1,13 +1,13 @@
 ﻿using Interfaces.Repo;
 using Interfaces.Service;
+using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.Azure.Cosmos.Table;
+using Microsoft.IdentityModel.Tokens;
+using Microsoft.OpenApi.Models;
 using Repo;
 using Service;
-using Microsoft.OpenApi.Models;
-using Microsoft.AspNetCore.Authentication.JwtBearer;
-using Microsoft.IdentityModel.Tokens;
 using System.Text;
-using Entities.Auth;
+using MyLog;
 
 namespace APIProject
 {
@@ -113,7 +113,7 @@ namespace APIProject
 
         public static IServiceCollection AddAndConfigureScopedDI(this IServiceCollection service, IConfiguration configuration)
         {
-            
+
             var _storageConnectionString = configuration.GetConnectionString("StorageConnectionString");
             service.AddScoped(storageAccount => CloudStorageAccount.Parse(_storageConnectionString));
 
@@ -125,7 +125,7 @@ namespace APIProject
             service.AddTransient<IProjectService, ProjectService>();
             service.AddTransient<IProjectRepo, ProjectRepo>();
             service.AddTransient<ITaskService, TaskService>();
-            service.AddTransient<ITaskRepo, TaskRepo > ();
+            service.AddTransient<ITaskRepo, TaskRepo>();
             service.AddTransient<IUserService, UserService>();
             service.AddTransient<IUserRepo, UserRepo>();
             return service;

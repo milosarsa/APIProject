@@ -1,11 +1,4 @@
-﻿using Newtonsoft.Json;
-using System;
-using System.Collections.Generic;
-using System.Diagnostics;
-using System.Linq;
-using System.Net;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Net;
 
 namespace Repo
 {
@@ -38,9 +31,6 @@ namespace Repo
             }
 
             memoryCache.Set("CurrentProjectId", currentId);
-            //Checking if project with given name already exists
-            
-
             TableOperation tableOperation = TableOperation.Insert(entity);
             TableResult tableResult = await table.ExecuteAsync(tableOperation);
             if (tableResult.HttpStatusCode == 204)
@@ -58,7 +48,7 @@ namespace Repo
 
             while (querySegment == null || querySegment.ContinuationToken != null)
             {
-                querySegment = await table.ExecuteQuerySegmentedAsync<ProjectEntity>(tableQuery, querySegment != null ? querySegment.ContinuationToken : null);
+                querySegment = await table.ExecuteQuerySegmentedAsync<ProjectEntity>(tableQuery, querySegment?.ContinuationToken ?? null);
                 entities.AddRange(querySegment.Results);
             }
             return entities;
@@ -76,55 +66,42 @@ namespace Repo
                 return entity; ;
             }
             else
-            {
                 throw new HttpRequestException("Entity not found.", null, HttpStatusCode.NotFound);
-            }
-            
+
         }
 
         public async Task UpdateAsync(ProjectEntity entity)
         {
             entity.ETag = "*";
-            if(await Exists(entity))
+            if (await Exists(entity))
             {
                 TableOperation tableOperation = TableOperation.Merge(entity);
                 TableResult tableResult = await table.ExecuteAsync(tableOperation);
-                if(tableResult.HttpStatusCode == 204)
+                if (tableResult.HttpStatusCode != 204)
                 {
-                    return;
-                }
-                else
-                {
-                    logger.LogError($"Update failed!\nTable operation returned {((HttpStatusCode)tableResult.HttpStatusCode).ToString()} status");
+                    logger.LogError($"Update failed!\nTable operation returned {(HttpStatusCode)tableResult.HttpStatusCode} status");
                     throw new HttpRequestException("Update failed.", null, (HttpStatusCode)tableResult.HttpStatusCode);
                 }
+                return;
             }
             else
-            {
                 throw new HttpRequestException("Entity not found.", null, HttpStatusCode.NotFound);
-            }
+            
         }
         public async Task DeleteAsync(Entity entity)
         {
-            if(await Exists(entity))
+            if (await Exists(entity))
             {
                 TableOperation tableOperation = TableOperation.Delete(entity);
                 TableResult tableResult = await table.ExecuteAsync(tableOperation);
                 if (tableResult.HttpStatusCode == 204)
-                {
                     return;
-                }
                 else
-                {
                     throw new HttpRequestException("Deleting entity failed.", null, (HttpStatusCode)tableResult.HttpStatusCode);
-                }
+                
             }
-            else
-            {
-                throw new HttpRequestException("Entity not found.", null, HttpStatusCode.NotFound);
-            }
+            throw new HttpRequestException("Entity not found.", null, HttpStatusCode.NotFound);
         }
-
 
         //Checking to see if the entity exists in the table using a provided entity partitionKey and rowKey
         public async Task<bool> Exists(Entity entity)
@@ -132,14 +109,8 @@ namespace Repo
             //Try to retrieve entity, returns false if status code is 404 
             TableOperation tableOperation = TableOperation.Retrieve(entity.PartitionKey, entity.RowKey);
             TableResult tableResult = await table.ExecuteAsync(tableOperation);
-            if(tableResult.HttpStatusCode == 404)
-            {
-                return false;
-            }
-            else if(tableResult.HttpStatusCode == 200)
-            {
+            if (tableResult.HttpStatusCode == 200) 
                 return true;
-            }
             return false;
         }
 
@@ -154,51 +125,42 @@ namespace Repo
             TableQuery<Entity> tableQuery = new TableQuery<Entity>();
             tableQuery.Where(TableQuery.GenerateFilterCondition(key, QueryComparisons.Equal, value));
 
-
             while (querySegment == null || querySegment.ContinuationToken != null)
             {
                 querySegment = await table.ExecuteQuerySegmentedAsync<Entity>(tableQuery, querySegment != null ? querySegment.ContinuationToken : null);
                 entities.AddRange(querySegment.Results);
             }
-
-            if (entities.Any())
-            {
+            if (entities.Any()) 
                 return true;
-            }
             else
-            {
                 return false;
-            }
         }
 
         //Query all the entities in the current table and return the highest id
         //We know that the table will be queried in ascending order so no need to iterate through entities
         private async Task<int> GetHighestId()
         {
-                int currentId = startId;
-                if (!memoryCache.TryGetValue("CurrentProjectId", out currentId))
+            int currentId = startId;
+            if (!memoryCache.TryGetValue("CurrentProjectId", out currentId))
+            {
+                List<Entity> entities = new List<Entity>();
+                //Creating table query to query all project entities
+                TableQuerySegment<Entity>? querySegment = null;
+                TableQuery<Entity> tableQuery = new TableQuery<Entity>();
+
+                while (querySegment == null || querySegment.ContinuationToken != null)
                 {
-                    List<Entity> entities = new List<Entity>();
-                    //Creating table query to query all project entities
-                    TableQuerySegment<Entity>? querySegment = null;
-                    TableQuery<Entity> tableQuery = new TableQuery<Entity>();
-
-                    while (querySegment == null || querySegment.ContinuationToken != null)
-                    {
-                        querySegment = await table.ExecuteQuerySegmentedAsync<Entity>(tableQuery, querySegment != null ? querySegment.ContinuationToken : null);
-                        entities.AddRange(querySegment.Results);
-                    }
-
-                    int entityId = int.Parse(entities.LastOrDefault()?.PartitionKey ?? "0");
-
-                    //Use startId if tempId is smaller than startId - 0 (no entries present)
-                    currentId = entityId < startId ? startId : entityId;
-                    memoryCache.Set("CurrentProjectId", currentId);
+                    querySegment = await table.ExecuteQuerySegmentedAsync<Entity>(tableQuery, querySegment != null ? querySegment.ContinuationToken : null);
+                    entities.AddRange(querySegment.Results);
                 }
-                return currentId;
+                int.TryParse(entities.LastOrDefault()?.PartitionKey, out currentId);
+
+                //Use startId if tempId is smaller than startId - 0 (no entries present)
+                currentId = currentId < startId ? startId : currentId;
+                memoryCache.Set("CurrentProjectId", currentId);
+            }
+            return currentId;
         }
-
-
         //Unused, leaving it here if needed
         //Get the current highest id in the table by querying all data and comparing
         private async Task<int> GetHighestIdOld()
@@ -221,7 +183,7 @@ namespace Repo
 
                     //Iterating through all entities and comparing their id
                     int tempId = 0;
-                    foreach(Entity entity in entities)
+                    foreach (Entity entity in entities)
                     {
                         int entityId = int.Parse(entity.PartitionKey);
                         tempId = tempId < entityId ? entityId : tempId;

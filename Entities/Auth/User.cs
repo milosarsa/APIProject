@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using Entities.Enums;
+﻿using Entities.Enums;
 
 namespace Entities.Auth
 {
@@ -17,10 +12,7 @@ namespace Entities.Auth
         public string? UserRole { get; set; }
         public string? Token { get; set; }
 
-        public UserAuth()
-        {
-
-        }
+        public UserAuth(){}
 
         public UserAuth(Guid Id, string? Username, string? UserRole)
         {
@@ -49,5 +41,5 @@ namespace Entities.Auth
         public string? Password { get; set; }
         public UserRoles UserRole { get; set; }
     }
-    
+
 }

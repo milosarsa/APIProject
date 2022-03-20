@@ -1,11 +1,4 @@
-﻿using Entities.Enums;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-
-namespace Service
+﻿namespace Service
 {
     //Responsible for data manipulation
     public class ProjectService : IProjectService
@@ -13,7 +6,7 @@ namespace Service
         private ILogger<ProjectService> logger;
         private IProjectRepo projectRepo;
         private IMemoryCache memoryCache;
-        
+
         public ProjectService(IProjectRepo _projectRepo, ILogger<ProjectService> _logger, IMemoryCache _memoryCache)
         {
             projectRepo = _projectRepo ?? throw new ArgumentNullException(nameof(projectRepo));
@@ -33,7 +26,7 @@ namespace Service
         {
             List<ProjectEntity> projectEntities = await projectRepo.ReadAllAsync();
             List<ProjectModel> projects = new List<ProjectModel>();
-            
+
             foreach (var entity in projectEntities)
             {
                 ProjectModel project = Mapper.ProjectEntityToObject(entity);

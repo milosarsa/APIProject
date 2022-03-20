@@ -1,10 +1,4 @@
 ﻿using Entities.Auth;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Cryptography.X509Certificates;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace Repo
 {
@@ -21,7 +15,7 @@ namespace Repo
         {
             UserDetails user = _users.SingleOrDefault(x =>
             {
-                return x.Username == userCreds.Username&& x.Password == userCreds.Password;
+                return x.Username == userCreds.Username && x.Password == userCreds.Password;
             }) ?? new UserDetails();
 
 
@@ -32,7 +26,7 @@ namespace Repo
             }
 
             //We are passing user auth details without a token as it will be generated later
-            userAccount = new UserAuth(user.Id,user.Username, user.UserRole.GetName());
+            userAccount = new UserAuth(user.Id, user.Username, user.UserRole.GetName());
             return true;
         }
     }

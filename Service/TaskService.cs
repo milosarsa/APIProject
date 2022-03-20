@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Net;
+﻿using System.Net;
 
 namespace Service
 {
@@ -22,7 +17,7 @@ namespace Service
         public async Task CreateTask(TaskBaseModel task)
         {
             int projectId = task.ProjectId;
-            if(!await projectRepo.Exists(projectId.ToString()))
+            if (!await projectRepo.Exists(projectId.ToString()))
                 throw new HttpRequestException("Project doesn't exist!", null, HttpStatusCode.NotFound);
 
             TaskEntity taskEntity = Mapper.TaskBaseObjectToEntity(task, true);
@@ -101,7 +96,7 @@ namespace Service
         public async Task UpdateTaskState(int taskId, TaskState taskState)
         {
             TaskEntity taskEntity = await taskRepo.ReadAsync(taskId);
-            if(taskEntity.State == (int)taskState)
+            if (taskEntity.State == (int)taskState)
                 return;
 
             taskEntity.State = (int)taskState;

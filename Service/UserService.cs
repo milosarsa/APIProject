@@ -1,12 +1,9 @@
 ﻿using Entities.Auth;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Security.Claims;
-using System.IdentityModel.Tokens.Jwt;
-using System.Text;
 using Microsoft.Extensions.Configuration;
 using Microsoft.IdentityModel.Tokens;
+using System.IdentityModel.Tokens.Jwt;
+using System.Security.Claims;
+using System.Text;
 
 namespace Service
 {
@@ -15,7 +12,7 @@ namespace Service
         private IUserRepo userRepo;
         private ILogger<UserService> logger;
         private readonly string encodingString;
-        public UserService(IUserRepo _userRepo,ILogger<UserService> _logger, IConfiguration _configuration)
+        public UserService(IUserRepo _userRepo, ILogger<UserService> _logger, IConfiguration _configuration)
         {
             logger = _logger ?? throw new ArgumentNullException(nameof(logger));
             userRepo = _userRepo ?? throw new ArgumentNullException(nameof(userRepo));
@@ -54,7 +51,7 @@ namespace Service
             string token = GenerateToken(_userAuth);
 
             _userAuth = _userAuth with { Token = token };
-                //new UserAuth(_userAuth.Id, _userAuth.Username, _userAuth.UserRole, token);
+            //new UserAuth(_userAuth.Id, _userAuth.Username, _userAuth.UserRole, token);
             return true;
         }
     }

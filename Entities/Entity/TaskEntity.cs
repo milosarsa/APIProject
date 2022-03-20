@@ -1,6 +1,4 @@
-﻿using Entities.Enums;
-
-namespace Entities.Entity
+﻿namespace Entities.Entity
 {
     public class TaskEntity : Entity
     {
@@ -8,5 +6,5 @@ namespace Entities.Entity
         public string? Description { get; set; }
         public int? State { get; set; }
     }
-    
+
 }
