@@ -10,7 +10,7 @@ APIProject API gives us the ability to easily store, manage and read Projects an
 ## Task
 
 Solution should provide an ability to easily add new fields in Task entity. 
-Each task should be a part of only one project. Project – is an instance which contains name, id and code (and also keep Tasks entities).
+Each task should be a part of only one project. Project â€“ is an instance which contains name, id and code (and also keep Tasks entities).
 You need to deploy your service in Microsoft Azure and use tables (Azure Table Storage) for storing your projects and tasks (you can use free subscription).
 To access to your service you need to implement Rest API.
 
@@ -32,7 +32,7 @@ To access to your service you need to implement Rest API.
 
 
 ## Technologies used
-- .Net Core (6.0)
+- .Net Core
 - AzureStorage
 
 
@@ -55,7 +55,6 @@ For testing purposed please use local azure storage emulator
 - Comments :)
 - Definitions
 - Performance improvements
-- MyLogger. (Currently abandoned, using serilog) - Custom logger library for capturing, processing, printing and storing logs. (Azure Table, Console, Local File, Azure Blob File)
 - Serilog
 - Azure Key Vault
 - Azure Blob Storage 
