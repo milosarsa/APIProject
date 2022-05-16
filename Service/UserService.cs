@@ -19,6 +19,15 @@ namespace Service
             encodingString = _configuration["EncodingString"];
         }
 
+        public UserDetails GetUser(string username)
+        {
+            UserDetails userDetails = userRepo.Read(username);
+
+            return userDetails;
+
+        }
+
+
         private string GenerateToken(UserAuth userAuth)
         {
 
@@ -45,14 +54,16 @@ namespace Service
 
         public bool Authenticate(UserCreds _userCreds, out UserAuth _userAuth)
         {
-            if (!userRepo.IsValidUser(_userCreds, out _userAuth))
-                return false;
-
-            string token = GenerateToken(_userAuth);
-
-            _userAuth = _userAuth with { Token = token };
+            if (userRepo.IsValidUser(_userCreds, out _userAuth))
+                if(_userAuth != UserAuth.Empty)
+                {
+                    string token = GenerateToken(_userAuth);
+                    _userAuth = _userAuth with { Token = token };
+                    return true;
+                }
+            return false;
             //new UserAuth(_userAuth.Id, _userAuth.Username, _userAuth.UserRole, token);
-            return true;
+
         }
     }
 }

@@ -201,7 +201,7 @@ namespace APIProject.Controllers
 
         [HttpPut("{taskId}/UpdateState")]
         [Authorize(Policy = "Manager")]
-        public async Task<IActionResult> UpdateTaskState(int taskId, [FromForm] TaskState taskState)
+        public async Task<IActionResult> UpdateTaskState(int taskId, [FromBody] TaskState taskState)
         {
             try
             {

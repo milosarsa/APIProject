@@ -7,7 +7,6 @@ using Microsoft.OpenApi.Models;
 using Repo;
 using Service;
 using System.Text;
-using MyLog;
 
 namespace APIProject
 {
