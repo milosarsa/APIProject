@@ -1,6 +1,7 @@
 ﻿using Entities.Auth;
 using Interfaces.Service;
 using Microsoft.AspNetCore.Authorization;
+using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
 using System.Security.Claims;
 
@@ -9,6 +10,7 @@ namespace APIProject.Controllers
     [Route("api/[controller]")]
     [ApiController]
     [Authorize]
+    [Produces("application/json")]
     public class UserController : ControllerBase
     {
         private ILogger<UserController> logger;
@@ -23,11 +25,13 @@ namespace APIProject.Controllers
             userService = _userService ?? throw new ArgumentNullException(nameof(userService));
         }
 
+        [EnableCors]
         [AllowAnonymous]
         [HttpPost("Login")]
-        public IActionResult Login([FromForm] UserCreds userCreds)
+        public IActionResult Login([FromBody] UserCreds userCreds)
         {
-            if (userCreds == null)
+            logger.LogInformation($"Started for user {userCreds.Username}");
+            if (userCreds == new UserCreds("",""))
                 return BadRequest("Credentials can not be empty");
             if (!ModelState.IsValid)
                 return BadRequest("Invalid model state");
@@ -35,6 +39,8 @@ namespace APIProject.Controllers
             if (!userService.Authenticate(userCreds, out userAuth))
                 return Unauthorized("Provided login info does not match any user.");
 
+
+            logger.LogInformation($"Returned {userAuth.ToString()}");
             return Ok(userAuth);
         }
 

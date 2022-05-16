@@ -3,7 +3,6 @@ using Interfaces.Service;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Mvc;
 using System.Net;
-using MyLog;
 
 namespace APIProject.Controllers
 {
@@ -170,7 +169,7 @@ namespace APIProject.Controllers
         }
         [HttpPut("{projectId}/UpdateState")]
         [Authorize(Policy = "Manager")]
-        public async Task<IActionResult> UpdateProjectState(int projectId, [FromForm] ProjectState projectState)
+        public async Task<IActionResult> UpdateProjectState(int projectId, [FromBody] ProjectState projectState)
         {
             try
             {
