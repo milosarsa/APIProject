@@ -3,14 +3,12 @@ using System.Diagnostics.CodeAnalysis;
 
 namespace Entities.Model
 {
-    public class ProjectBaseModel
+    public class TaskUpdateModel
     {
         [Required(ErrorMessage = "Name is required")]
         public string? Name { get; set; }
-        [AllowNull]
-        public string? Description { get; set; }
 
         [AllowNull]
-        public string Code { get; set; }
+        public string? Description { get; set; }
     }
 }

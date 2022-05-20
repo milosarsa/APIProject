@@ -45,10 +45,10 @@
         }
 
         //Takes ProjectBase as input to omit using Id and Tasks
-        public async Task UpdateProject(int id, ProjectBaseModel project)
+        public async Task UpdateProject(int id, ProjectUpdateModel project)
         {
-            ProjectEntity projectEntity = Mapper.ProjectBaseObjectToEntity(project);
-            projectEntity.PartitionKey = id.ToString();
+            ProjectEntity projectEntity = await projectRepo.ReadAsync(id);
+            projectEntity.FromProjectUpdateModel(project);
             await projectRepo.UpdateAsync(projectEntity);
         }
 

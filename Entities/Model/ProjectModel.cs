@@ -8,7 +8,6 @@
 
         public string State { get; set; }
 
-        public string Code { get; set; }
 
         private List<int> _tasks;
     }

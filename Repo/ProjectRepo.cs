@@ -1,5 +1,4 @@
-﻿using System.Net;
-
+﻿
 namespace Repo
 {
     //Responsible for data access
@@ -161,47 +160,6 @@ namespace Repo
             }
             return currentId;
         }
-        //Unused, leaving it here if needed
-        //Get the current highest id in the table by querying all data and comparing
-        private async Task<int> GetHighestIdOld()
-        {
-            try
-            {
-                int currentId = startId;
-                if (!memoryCache.TryGetValue("CurrentProjectId", out currentId))
-                {
-                    List<Entity> entities = new List<Entity>();
-                    //Creating table query to query all project entities
-                    TableQuerySegment<Entity>? querySegment = null;
-                    TableQuery<Entity> tableQuery = new TableQuery<Entity>();
-
-                    while (querySegment == null || querySegment.ContinuationToken != null)
-                    {
-                        querySegment = await table.ExecuteQuerySegmentedAsync<Entity>(tableQuery, querySegment != null ? querySegment.ContinuationToken : null);
-                        entities.AddRange(querySegment.Results);
-                    }
-
-                    //Iterating through all entities and comparing their id
-                    int tempId = 0;
-                    foreach (Entity entity in entities)
-                    {
-                        int entityId = int.Parse(entity.PartitionKey);
-                        tempId = tempId < entityId ? entityId : tempId;
-                    }
-
-                    //Use startId if tempId is smaller than startId - 0 (no entries present)
-                    currentId = tempId < startId ? startId : tempId;
-                    memoryCache.Set("CurrentProjectId", currentId);
-                }
-                return currentId;
-
-            }
-            catch (Exception ex)
-            {
-                logger.LogError("Reading all entities failed.\n" +
-                    ex.Message);
-                throw new HttpRequestException($"Reading all entities failed with error.\n{ex.Message}", ex, HttpStatusCode.InternalServerError);
-            }
-        }
+        
     }
 }

@@ -129,7 +129,7 @@ namespace APIProject.Controllers
 
         [HttpPut("{projectId}/Update")]
         [Authorize(Policy = "Manager")]
-        public async Task<IActionResult> UpdateProject(int projectId, [FromBody] ProjectBaseModel project)
+        public async Task<IActionResult> UpdateProject(int projectId, [FromBody] ProjectUpdateModel project)
         {
             try
             {
@@ -169,7 +169,7 @@ namespace APIProject.Controllers
         }
         [HttpPut("{projectId}/UpdateState")]
         [Authorize(Policy = "Manager")]
-        public async Task<IActionResult> UpdateProjectState(int projectId, [FromBody] ProjectState projectState)
+        public async Task<IActionResult> UpdateProjectState(int projectId, [FromForm] ProjectState projectState)
         {
             try
             {

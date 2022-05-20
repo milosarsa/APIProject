@@ -4,3 +4,4 @@ global using Interfaces.Repo;
 global using Microsoft.Azure.Cosmos.Table;
 global using Microsoft.Extensions.Caching.Memory;
 global using Microsoft.Extensions.Logging;
+global using System.Net;

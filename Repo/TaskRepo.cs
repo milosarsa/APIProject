@@ -1,4 +1,4 @@
-﻿using System.Net;
+﻿
 
 
 namespace Repo
@@ -28,6 +28,7 @@ namespace Repo
             entity.PartitionKey = currentId.ToString();
 
             memoryCache.Set("CurrentTaskId", currentId);
+
             TableOperation tableOperation = TableOperation.Insert(entity);
             TableResult tableResult = await table.ExecuteAsync(tableOperation);
             if (tableResult.HttpStatusCode == 204)
@@ -164,7 +165,7 @@ namespace Repo
         private async Task<int> GetHighestId()
         {
             int currentId = startId;
-            if (!memoryCache.TryGetValue("CurrentProjectId", out currentId))
+            if (!memoryCache.TryGetValue("CurrentTaskId", out currentId))
             {
                 List<Entity> entities = new List<Entity>();
                 //Creating table query to query all project entities
@@ -180,7 +181,7 @@ namespace Repo
 
                 //Use startId if tempId is smaller than startId - 0 (no entries present)
                 currentId = currentId  < startId ? startId : currentId;
-                memoryCache.Set("CurrentProjectId", currentId);
+                memoryCache.Set("CurrentTaskId", currentId);
             }
             return currentId;
 

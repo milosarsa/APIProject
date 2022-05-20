@@ -23,18 +23,31 @@ namespace Service
             projectEntity.RowKey = project.Name;
             projectEntity.Description = project.Description;
             projectEntity.Tasks = MySerializer.ListToString(new List<int>());
-
+            projectEntity.Code = project.Code;
             if (newProject)
             {
-                projectEntity.Code = String.Empty;
                 projectEntity.State = 0;
             }
 
             return projectEntity;
         }
+
+        public static ProjectEntity FromProjectUpdateModel(this ProjectEntity projectEntity, ProjectUpdateModel project)
+        {
+            projectEntity.Description = project.Description;
+            projectEntity.Code = project.Code;
+            return projectEntity;
+        }
+        public static TaskEntity FromTaskUpdateModel(this TaskEntity taskEntity, TaskUpdateModel task)
+        {
+            taskEntity.Name = task.Name;
+            taskEntity.Description = task.Description;
+            return taskEntity;
+        }
         public static TaskModel TaskEntityToObject(TaskEntity taskEntity)
         {
             TaskModel task = new TaskModel();
+            task.Id = int.Parse(taskEntity.PartitionKey);
             task.ProjectId = int.Parse(taskEntity.RowKey);
             task.Name = taskEntity.Name;
             task.Description = taskEntity.Description;

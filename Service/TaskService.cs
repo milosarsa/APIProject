@@ -67,10 +67,10 @@ namespace Service
             return task;
         }
 
-        public async Task UpdateTask(int id, TaskBaseModel task)
+        public async Task UpdateTask(int id, TaskUpdateModel task)
         {
-            TaskEntity taskEntity = Mapper.TaskBaseObjectToEntity(task);
-            taskEntity.PartitionKey = id.ToString();
+            TaskEntity taskEntity = await taskRepo.ReadAsync(id);
+            taskEntity.FromTaskUpdateModel(task);
             await taskRepo.UpdateAsync(taskEntity);
         }
         public async Task DeleteTask(int id)

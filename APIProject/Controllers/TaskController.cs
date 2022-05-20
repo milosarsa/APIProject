@@ -160,7 +160,7 @@ namespace APIProject.Controllers
 
         [HttpPut("{taskId}/Update")]
         [Authorize(Policy = "Manager")]
-        public async Task<IActionResult> UpdateTask(int taskId, [FromBody] TaskBaseModel task)
+        public async Task<IActionResult> UpdateTask(int taskId, [FromBody] TaskUpdateModel task)
         {
             try
             {
@@ -201,11 +201,11 @@ namespace APIProject.Controllers
 
         [HttpPut("{taskId}/UpdateState")]
         [Authorize(Policy = "Manager")]
-        public async Task<IActionResult> UpdateTaskState(int taskId, [FromBody] TaskState taskState)
+        public async Task<IActionResult> UpdateTaskState(int taskId, [FromForm] TaskState taskState)
         {
             try
             {
-                if ((int)taskState < 0 || (int)taskState > 3)
+                if ((int)taskState < 0 || (int)taskState > 5)
                     return BadRequest("Object sent is null.");
 
                 if (!ModelState.IsValid)
